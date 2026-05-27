@@ -300,8 +300,34 @@ function ScraperCard({ info, onJobsUpdated }: { info: ScraperInfo; onJobsUpdated
   );
 }
 
+const DEFAULT_SCRAPERS: ScraperInfo[] = [
+  {
+    id: "linkedin",
+    nombre: "LinkedIn & Indeed",
+    descripcion: "Scraper vía jobspy para LinkedIn e Indeed",
+    default_config: {
+      terminos: ["PR", "Marketing", "Comunicación Institucional", "Comunicación Externa"],
+      sitios: ["linkedin", "indeed"],
+      ubicacion: "Argentina",
+      resultados_por_busqueda: 30,
+      horas_atras: 96,
+      is_remote: false,
+    },
+  },
+  {
+    id: "argentina",
+    nombre: "ZonaJobs & Bumeran",
+    descripcion: "Scraper Selenium para ZonaJobs y Bumeran (Argentina)",
+    default_config: {
+      terminos: ["PR", "Marketing", "Comunicación Institucional", "Comunicación Externa"],
+      paginas_por_busqueda: 3,
+      obtener_descripcion: true,
+    },
+  },
+];
+
 export default function ScrapersPage() {
-  const [scrapers, setScrapers] = useState<ScraperInfo[]>([]);
+  const [scrapers, setScrapers] = useState<ScraperInfo[]>(DEFAULT_SCRAPERS);
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
