@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: scrapping-empleos-api
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: FRONTEND_URL
+        sync: false
