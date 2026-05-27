@@ -1,4 +1,4 @@
-import { AlertCircleIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, PlayIcon, RefreshCwIcon } from "lucide-react";
+import { AlertCircleIcon, CheckCircleIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, PlayIcon, RefreshCwIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import type { Run, ScraperInfo } from "../types";
@@ -115,10 +115,30 @@ function ArgentinaConfig({
   onChange: (c: Record<string, unknown>) => void;
 }) {
   const terminos = (config.terminos as string[]) ?? [];
+  const tiempoEstimado = terminos.length * 15;
   return (
     <div className="space-y-3 text-sm">
+      {/* Advertencia de tiempo */}
+      <div className="flex gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-amber-800">
+        <ClockIcon size={15} className="flex-shrink-0 mt-0.5" />
+        <div>
+          <p className="font-medium">Scraper lento — usá pocos términos</p>
+          <p className="text-xs mt-0.5">
+            Cada término tarda ~15 min con descripciones.{" "}
+            {terminos.length > 0 && (
+              <span className="font-semibold">
+                Con {terminos.length} término{terminos.length !== 1 ? "s" : ""}: ~{tiempoEstimado} min estimados.
+              </span>
+            )}
+          </p>
+        </div>
+      </div>
+
       <div>
-        <label className="block font-medium text-gray-700 mb-1">Términos de búsqueda (uno por línea)</label>
+        <label className="block font-medium text-gray-700 mb-1">
+          Términos de búsqueda{" "}
+          <span className="text-amber-600 font-normal">(recomendado: 1-2 máximo)</span>
+        </label>
         <textarea
           rows={4}
           value={terminos.join("\n")}
@@ -126,6 +146,7 @@ function ArgentinaConfig({
             onChange({ ...config, terminos: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })
           }
           className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          placeholder="Un término por línea&#10;Ej: Marketing"
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -153,7 +174,7 @@ function ArgentinaConfig({
         </div>
       </div>
       <p className="text-xs text-gray-400">
-        Con descripciones: ~15-30 min. Sin descripciones: ~2-3 min.
+        Con descripciones: ~15 min/término · Sin descripciones: ~2-3 min en total
       </p>
     </div>
   );
@@ -228,6 +249,12 @@ function ScraperCard({ info, onJobsUpdated }: { info: ScraperInfo; onJobsUpdated
         <div>
           <h3 className="text-lg font-semibold text-gray-900">{info.nombre}</h3>
           <p className="text-sm text-gray-500 mt-0.5">{info.descripcion}</p>
+          {info.id === "argentina" && (
+            <p className="text-xs text-amber-600 mt-1.5 flex items-center gap-1">
+              <ClockIcon size={12} />
+              ~15 min por término de búsqueda — usá pocos términos
+            </p>
+          )}
         </div>
         <button
           onClick={handleRun}
