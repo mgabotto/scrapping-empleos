@@ -24,14 +24,9 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Job Scraper & Analyzer")
 
-_origins = ["http://localhost:5173"]
-if os.environ.get("FRONTEND_URL"):
-    _origins.append(os.environ["FRONTEND_URL"])
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
