@@ -56,7 +56,7 @@ export default function ProfilePage() {
             value={form.nombre}
             onChange={(e) => set("nombre", e.target.value)}
             placeholder="Tu nombre"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
           />
         </div>
 
@@ -69,7 +69,7 @@ export default function ProfilePage() {
             onChange={(e) => set("skills", e.target.value)}
             rows={4}
             placeholder="Ej: Relaciones Públicas, Comunicación Corporativa, Gestión de Crisis, Redes Sociales, Adobe Suite, SEO, Redacción periodística..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
           />
           <p className="text-xs text-gray-400 mt-1">Listá tus habilidades separadas por coma. Cuanto más detallado, mejor el análisis.</p>
         </div>
@@ -83,7 +83,7 @@ export default function ProfilePage() {
               max={40}
               value={form.experiencia_anos}
               onChange={(e) => set("experiencia_anos", Number(e.target.value))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
             />
           </div>
 
@@ -92,7 +92,7 @@ export default function ProfilePage() {
             <select
               value={form.nivel}
               onChange={(e) => set("nivel", e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 bg-white"
             >
               <option value="">Sin especificar</option>
               <option value="Junior">Junior (0–2 años)</option>
@@ -108,7 +108,7 @@ export default function ProfilePage() {
           <select
             value={form.modalidad_preferida}
             onChange={(e) => set("modalidad_preferida", e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 bg-white"
           >
             <option value="">Sin preferencia</option>
             <option value="Remoto">Remoto</option>
@@ -124,7 +124,7 @@ export default function ProfilePage() {
             onChange={(e) => set("otras_preferencias", e.target.value)}
             rows={3}
             placeholder="Ej: Busco posiciones en empresas de tecnología o startups, con foco en comunicación interna, sueldo mínimo $X..."
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
           />
         </div>
 
@@ -132,7 +132,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
           >
             <SaveIcon size={16} />
             {saving ? "Guardando..." : "Guardar perfil"}

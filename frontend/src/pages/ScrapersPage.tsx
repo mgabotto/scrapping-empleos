@@ -9,7 +9,7 @@ function ProgressBar({ value }: { value: number }) {
   return (
     <div className="w-full bg-gray-200 rounded-full h-2">
       <div
-        className="bg-indigo-500 h-2 rounded-full transition-all duration-500"
+        className="bg-rose-500 h-2 rounded-full transition-all duration-500"
         style={{ width: `${Math.min(value, 100)}%` }}
       />
     </div>
@@ -35,7 +35,7 @@ function LinkedInConfig({
           onChange={(e) =>
             onChange({ ...config, terminos: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })
           }
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -45,7 +45,7 @@ function LinkedInConfig({
             type="text"
             value={(config.ubicacion as string) ?? ""}
             onChange={(e) => onChange({ ...config, ubicacion: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
           />
         </div>
         <div>
@@ -55,7 +55,7 @@ function LinkedInConfig({
             min={1}
             value={(config.horas_atras as number) ?? 96}
             onChange={(e) => onChange({ ...config, horas_atras: Number(e.target.value) })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
           />
         </div>
         <div>
@@ -66,7 +66,7 @@ function LinkedInConfig({
             max={100}
             value={(config.resultados_por_busqueda as number) ?? 30}
             onChange={(e) => onChange({ ...config, resultados_por_busqueda: Number(e.target.value) })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
           />
         </div>
         <div className="flex items-end pb-2">
@@ -145,7 +145,7 @@ function ArgentinaConfig({
           onChange={(e) =>
             onChange({ ...config, terminos: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })
           }
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400 resize-none"
           placeholder="Un término por línea&#10;Ej: Marketing"
         />
       </div>
@@ -158,7 +158,7 @@ function ArgentinaConfig({
             max={10}
             value={(config.paginas_por_busqueda as number) ?? 3}
             onChange={(e) => onChange({ ...config, paginas_por_busqueda: Number(e.target.value) })}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
           />
         </div>
         <div className="flex items-end pb-2">
@@ -259,7 +259,7 @@ function ScraperCard({ info, onJobsUpdated }: { info: ScraperInfo; onJobsUpdated
         <button
           onClick={handleRun}
           disabled={isRunning}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+          className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
         >
           {isRunning ? (
             <><RefreshCwIcon size={15} className="animate-spin" /> Ejecutando...</>
@@ -364,8 +364,8 @@ export default function ScrapersPage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-8">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Scrapers</h2>
-        <p className="text-gray-500 mt-1">Ejecutá cada scraper para obtener las últimas ofertas.</p>
+        <h2 className="text-2xl font-bold text-gray-900">🔍 Buscadores</h2>
+        <p className="text-gray-500 mt-1">Buscá ofertas de empleo en múltiples plataformas.</p>
       </div>
 
       <div className="space-y-4">

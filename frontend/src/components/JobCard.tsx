@@ -49,7 +49,7 @@ export default function JobCard({ job }: { job: Job }) {
               {job.fuente}
             </span>
             {job.es_remoto && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-600">
                 Remoto
               </span>
             )}
@@ -96,7 +96,7 @@ export default function JobCard({ job }: { job: Job }) {
 
       {/* AI justification */}
       {job.ai_justificacion && (
-        <p className="mt-3 text-sm text-gray-600 italic border-l-2 border-indigo-200 pl-3">
+        <p className="mt-3 text-sm text-gray-600 italic border-l-2 border-rose-200 pl-3">
           {job.ai_justificacion}
         </p>
       )}
@@ -120,7 +120,7 @@ export default function JobCard({ job }: { job: Job }) {
               href={job.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+              className="flex items-center gap-1 text-xs text-rose-500 hover:text-rose-700 font-medium"
             >
               <ExternalLinkIcon size={13} /> Ver oferta
             </a>

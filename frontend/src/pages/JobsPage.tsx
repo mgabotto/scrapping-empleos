@@ -23,8 +23,8 @@ type SortKey = "titulo" | "empresa" | "ubicacion" | "fuente" | "fecha";
 function SortIcon({ col, current, dir }: { col: SortKey; current: SortKey; dir: "asc" | "desc" }) {
   if (col !== current) return <ArrowUpDownIcon size={13} className="text-gray-300 ml-1 inline" />;
   return dir === "asc"
-    ? <ChevronUpIcon size={13} className="text-indigo-500 ml-1 inline" />
-    : <ChevronDownIcon size={13} className="text-indigo-500 ml-1 inline" />;
+    ? <ChevronUpIcon size={13} className="text-rose-500 ml-1 inline" />
+    : <ChevronDownIcon size={13} className="text-rose-500 ml-1 inline" />;
 }
 
 function exportCSV(jobs: Job[]) {
@@ -116,7 +116,7 @@ export default function JobsPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Empleos</h2>
+          <h2 className="text-2xl font-bold text-gray-900">💼 Empleos</h2>
           <p className="text-gray-500 mt-1 text-sm">
             {stats
               ? `${stats.total} ofertas encontradas` +
@@ -155,13 +155,13 @@ export default function JobsPage() {
             placeholder="Buscar por título o empresa..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-400"
           />
         </div>
         <select
           value={fuente}
           onChange={(e) => setFuente(e.target.value)}
-          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-rose-400"
         >
           <option value="">Todas las fuentes</option>
           {sources.map((s) => (
@@ -179,10 +179,11 @@ export default function JobsPage() {
       </div>
 
       {/* Table */}
-      {sorted.length === 0 ? (
+      {sorted.length === 0 && jobs.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-gray-400 py-20">
-          <p className="font-medium">No hay empleos todavía</p>
-          <p className="text-sm mt-1">Ejecutá un scraper para obtener ofertas</p>
+          <p className="text-5xl mb-4">🔍</p>
+          <p className="font-medium text-gray-600">No hay ofertas todavía</p>
+          <p className="text-sm mt-1">Andá a <strong>Buscadores</strong> y ejecutá una búsqueda</p>
         </div>
       ) : (
         <div className="flex-1 overflow-auto rounded-xl border border-gray-200 shadow-sm">
@@ -227,7 +228,7 @@ export default function JobsPage() {
                       key={job.id}
                       className={`border-b border-gray-100 cursor-pointer transition-colors ${
                         idx % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                      } hover:bg-indigo-50/40`}
+                      } hover:bg-rose-50/40`}
                       onClick={() => setExpandedId(isExpanded ? null : job.id)}
                     >
                       <td className="px-4 py-3">
@@ -247,7 +248,7 @@ export default function JobsPage() {
                           <span className="text-xs text-green-700 font-medium mt-0.5 block">{job.salario}</span>
                         )}
                         {job.es_remoto && (
-                          <span className="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded mt-0.5 inline-block">
+                          <span className="text-xs bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded mt-0.5 inline-block">
                             Remoto
                           </span>
                         )}
@@ -262,7 +263,7 @@ export default function JobsPage() {
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="text-indigo-500 hover:text-indigo-700 inline-flex items-center justify-center"
+                            className="text-rose-500 hover:text-rose-600 inline-flex items-center justify-center"
                             title="Ver oferta"
                           >
                             <ExternalLinkIcon size={16} />
@@ -271,7 +272,7 @@ export default function JobsPage() {
                       </td>
                     </tr>
                     {isExpanded && job.descripcion && (
-                      <tr key={`${job.id}-desc`} className="bg-indigo-50/30 border-b border-gray-100">
+                      <tr key={`${job.id}-desc`} className="bg-rose-50/30 border-b border-gray-100">
                         <td colSpan={6} className="px-6 py-3">
                           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Descripción</p>
                           <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed max-h-48 overflow-y-auto">
