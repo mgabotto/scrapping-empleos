@@ -18,6 +18,15 @@ DEFAULT_CONFIG = {
     "demora_entre_requests": 3,
 }
 
+# Normaliza texto para URL (quita tildes, espacios→guiones)
+def _slugify(texto: str) -> str:
+    reemplazos = {"á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u",
+                  "Á": "a", "É": "e", "Í": "i", "Ó": "o", "Ú": "u",
+                  "ñ": "n", "Ñ": "n", "ü": "u", "Ü": "u"}
+    for k, v in reemplazos.items():
+        texto = texto.replace(k, v)
+    return texto.lower().replace(" ", "-")
+
 
 def run(config: Optional[Dict] = None, progress_callback: Optional[Callable] = None) -> List[Dict]:
     cfg = {**DEFAULT_CONFIG, **(config or {})}
@@ -35,12 +44,12 @@ def run(config: Optional[Dict] = None, progress_callback: Optional[Callable] = N
             if progress_callback:
                 progress_callback(pct_base, f"Buscando '{termino}' en Bumeran...")
 
-            todos.extend(_scrapear_bumeran(driver, termino, paginas, cfg.get("demora_entre_requests", 3)))
+            todos.extend(_scrapear_navent(driver, termino, paginas, cfg.get("demora_entre_requests", 3), "Bumeran", "bumeran.com.ar", progress_callback))
             time.sleep(2)
 
             if progress_callback:
                 progress_callback(pct_base + 5, f"Buscando '{termino}' en ZonaJobs...")
-            todos.extend(_scrapear_zonajobs(driver, termino, paginas, cfg.get("demora_entre_requests", 3)))
+            todos.extend(_scrapear_navent(driver, termino, paginas, cfg.get("demora_entre_requests", 3), "ZonaJobs", "zonajobs.com.ar", progress_callback))
             time.sleep(2)
 
         # Deduplicar
@@ -79,8 +88,9 @@ def _iniciar_driver():
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
     opts.add_argument("--window-size=1920,1080")
+    opts.add_argument("--disable-blink-features=AutomationControlled")
     opts.add_argument(
-        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "user-agent=Mozilla/5.0 (X11; Linux x86_64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     )
     if sys.platform != "win32":
@@ -94,61 +104,103 @@ def _iniciar_driver():
     return webdriver.Chrome(service=service, options=opts)
 
 
-def _scrapear_bumeran(driver, termino: str, max_paginas: int, demora: int) -> List[Dict]:
-    return _scrapear_navent(driver, termino, max_paginas, demora, "Bumeran", "bumeran.com.ar")
+def _esperar_pagina(driver, timeout: int = 30) -> None:
+    """Espera a que el DOM esté listo y el contenido dinámico renderizado."""
+    try:
+        WebDriverWait(driver, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+    except Exception:
+        pass
 
 
-def _scrapear_zonajobs(driver, termino: str, max_paginas: int, demora: int) -> List[Dict]:
-    return _scrapear_navent(driver, termino, max_paginas, demora, "ZonaJobs", "zonajobs.com.ar")
-
-
-def _scrapear_navent(driver, termino: str, max_paginas: int, demora: int, fuente: str, dominio: str) -> List[Dict]:
+def _scrapear_navent(
+    driver,
+    termino: str,
+    max_paginas: int,
+    demora: int,
+    fuente: str,
+    dominio: str,
+    progress_callback: Optional[Callable] = None,
+) -> List[Dict]:
     empleos: List[Dict] = []
-    termino_url = termino.lower().replace(" ", "-")
+    termino_slug = _slugify(termino)
 
     for pagina in range(1, max_paginas + 1):
-        url = f"https://www.{dominio}/empleos-busqueda-{termino_url}.html?page={pagina}"
+        url = f"https://www.{dominio}/empleos-busqueda-{termino_slug}.html?page={pagina}"
         try:
             driver.get(url)
-            WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, "main#listado-avisos, main[aria-label*='avisos']")
-                )
-            )
-            time.sleep(demora)
+            _esperar_pagina(driver, timeout=30)
+            # Dar tiempo extra al framework JS para renderizar los cards
+            time.sleep(max(demora, 4))
 
-            tarjetas = driver.find_elements(
-                By.CSS_SELECTOR,
-                "a[aria-labelledby*='job-posting'], a[href*='/empleos/']",
-            )
-            if not tarjetas:
-                tarjetas_raw = driver.find_elements(
-                    By.CSS_SELECTOR, "[data-col-job-posting], [id*='header-col-job-posting']"
-                )
-                tarjetas = [t.find_element(By.XPATH, "ancestor::a[1]") for t in tarjetas_raw if t]
-
-            if not tarjetas:
+            # Detectar si hay bloqueo o CAPTCHA
+            titulo_pagina = driver.title or ""
+            if any(w in titulo_pagina.lower() for w in ["captcha", "blocked", "403", "access denied"]):
+                if progress_callback:
+                    progress_callback(None, f"[{fuente}] Página bloqueada: {titulo_pagina}")
                 break
 
+            # Obtener links a avisos (selector más confiable: el patrón de URL nunca cambia)
+            links_avisos = driver.find_elements(By.CSS_SELECTOR, "a[href*='/empleos/ver/']")
+
+            # Fallbacks progresivos si el selector principal no encuentra nada
+            if not links_avisos:
+                for fallback in [
+                    "a[href*='/empleo/']",
+                    "[data-testid*='job'] a, [data-testid*='aviso'] a",
+                    "article a[href]",
+                    "li a[href*='empleo']",
+                ]:
+                    links_avisos = driver.find_elements(By.CSS_SELECTOR, fallback)
+                    if links_avisos:
+                        break
+
+            # Último recurso: cualquier <a> cuya URL contenga el patrón de aviso
+            if not links_avisos:
+                todos_links = driver.find_elements(By.TAG_NAME, "a")
+                links_avisos = [
+                    l for l in todos_links
+                    if "/empleos/ver/" in (l.get_attribute("href") or "")
+                    or "/empleo/" in (l.get_attribute("href") or "")
+                ]
+
+            if not links_avisos:
+                if progress_callback:
+                    progress_callback(None, f"[{fuente} p{pagina}] Sin resultados — {titulo_pagina or url}")
+                break  # Sin más páginas
+
             vistos: set = set()
-            for tarjeta in tarjetas:
+            for link in links_avisos:
                 try:
-                    url_aviso = tarjeta.get_attribute("href") or ""
-                    if url_aviso in vistos:
+                    url_aviso = link.get_attribute("href") or ""
+                    if not url_aviso or url_aviso in vistos:
                         continue
                     vistos.add(url_aviso)
 
-                    titulo = _texto_seguro(tarjeta, ["h2", "h3", "[class*='dPSvQ']", "[class*='gIOnpy']"])
-                    empresa = _texto_seguro(tarjeta, [
-                        "[class*='buGlAa']:nth-child(2)", "[class*='company']",
-                        "[class*='empresa']", "div[class*='sc-'] span",
+                    # Intentar extraer info del texto del card
+                    texto_card = link.text.strip()
+                    lineas = [l.strip() for l in texto_card.split("\n") if l.strip()]
+
+                    titulo = _texto_seguro(link, ["h2", "h3", "[class*='title']", "[class*='titulo']", "[class*='Title']"])
+                    if not titulo and lineas:
+                        titulo = lineas[0]
+
+                    empresa = _texto_seguro(link, [
+                        "[class*='company']", "[class*='empresa']", "[class*='Company']",
+                        "[class*='employer']", "span[class*='sc-']",
                     ])
-                    ubicacion = _texto_seguro(tarjeta, [
-                        "[id*='footer-col-job-posting'] span", "[class*='dzQEYZ'] span",
-                        "[class*='location']", "[class*='ubicacion']",
+                    if not empresa and len(lineas) > 1:
+                        empresa = lineas[1]
+
+                    ubicacion = _texto_seguro(link, [
+                        "[class*='location']", "[class*='ubicacion']", "[class*='Location']",
+                        "address", "span[class*='loc']",
                     ])
-                    fecha = _texto_seguro(tarjeta, [
-                        "[class*='bpubUI']", "[class*='date']", "[class*='fecha']", "time",
+
+                    fecha = _texto_seguro(link, [
+                        "time", "[class*='date']", "[class*='fecha']",
+                        "[class*='Date']", "[datetime]",
                     ])
 
                     if titulo:
@@ -168,27 +220,26 @@ def _scrapear_navent(driver, termino: str, max_paginas: int, demora: int, fuente
                         })
                 except Exception:
                     continue
-        except Exception:
-            break
+
+        except Exception as exc:
+            if progress_callback:
+                progress_callback(None, f"[{fuente} p{pagina}] Error: {str(exc)[:80]}")
+            continue  # Intentar la próxima página
 
     return empleos
 
 
 def _obtener_descripcion(driver, url_aviso: str) -> Optional[str]:
     es_selecta = "selecta" in url_aviso.lower()
-    sleep_inicial = 4.0 if es_selecta else 1.5
+    sleep_inicial = 4.0 if es_selecta else 2.0
     timeout = 20 if es_selecta else 15
 
     try:
         driver.get(url_aviso)
-        WebDriverWait(driver, timeout).until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, "div#ficha-detalle, div#section-detalle")
-            )
-        )
+        _esperar_pagina(driver, timeout=timeout)
         time.sleep(sleep_inicial)
 
-        # Caso iframe (Selecta)
+        # Caso iframe (Selecta y algunos avisos externos)
         try:
             iframe = driver.find_element(
                 By.CSS_SELECTOR, "div#ficha-detalle iframe, div#section-detalle iframe"
@@ -201,22 +252,19 @@ def _obtener_descripcion(driver, url_aviso: str) -> Optional[str]:
         except Exception:
             driver.switch_to.default_content()
 
-        # Esperar contenido lazy
-        try:
-            WebDriverWait(driver, timeout).until(
-                lambda d: len(
-                    d.find_element(By.CSS_SELECTOR, "div#ficha-detalle, div#section-detalle").text.strip()
-                ) > 50
-            )
-        except Exception:
-            pass
-
+        # Selectores de descripción (del más específico al más genérico)
         for selector in [
-            "div#ficha-detalle", "div#section-detalle",
-            "div[data-testid='job-description']", "div[class*='JobDescription']",
-            "div[class*='bGXeph']", "div[class*='duqfIc']",
-            "div[class*='description']", "div[class*='descripcion']",
-            "article[class*='job']", "main section",
+            "div#ficha-detalle",
+            "div#section-detalle",
+            "[data-testid='job-description']",
+            "[data-testid*='description']",
+            "[class*='JobDescription']",
+            "[class*='job-description']",
+            "[class*='description']",
+            "[class*='descripcion']",
+            "article section",
+            "main article",
+            "main section",
         ]:
             try:
                 elem = driver.find_element(By.CSS_SELECTOR, selector)
