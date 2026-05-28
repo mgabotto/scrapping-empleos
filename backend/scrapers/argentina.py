@@ -132,10 +132,26 @@ def _scrapear_navent(
             driver.get(url)
             _esperar_pagina(driver, timeout=30)
             # Dar tiempo extra al framework JS para renderizar los cards
-            time.sleep(max(demora, 4))
+            time.sleep(max(demora, 5))
+
+            titulo_pagina = driver.title or ""
+            url_actual = driver.current_url or url
+
+            # Log diagnóstico visible en Render logs y en el UI
+            try:
+                body_text = driver.find_element(By.TAG_NAME, "body").text
+                body_preview = body_text[:300].replace("\n", " ")
+                total_links = len(driver.find_elements(By.TAG_NAME, "a"))
+            except Exception:
+                body_preview = "(no body)"
+                total_links = 0
+
+            print(f"[SCRAPER {fuente} p{pagina}] título='{titulo_pagina}' url={url_actual}", flush=True)
+            print(f"[SCRAPER {fuente} p{pagina}] links_total={total_links} body={body_preview[:150]}", flush=True)
+            if progress_callback:
+                progress_callback(None, f"[{fuente} p{pagina}] '{titulo_pagina}' — {total_links} links — {body_preview[:80]}")
 
             # Detectar si hay bloqueo o CAPTCHA
-            titulo_pagina = driver.title or ""
             if any(w in titulo_pagina.lower() for w in ["captcha", "blocked", "403", "access denied"]):
                 if progress_callback:
                     progress_callback(None, f"[{fuente}] Página bloqueada: {titulo_pagina}")
@@ -143,17 +159,20 @@ def _scrapear_navent(
 
             # Obtener links a avisos (selector más confiable: el patrón de URL nunca cambia)
             links_avisos = driver.find_elements(By.CSS_SELECTOR, "a[href*='/empleos/ver/']")
+            print(f"[SCRAPER {fuente} p{pagina}] selector /empleos/ver/ → {len(links_avisos)}", flush=True)
 
             # Fallbacks progresivos si el selector principal no encuentra nada
             if not links_avisos:
                 for fallback in [
                     "a[href*='/empleo/']",
-                    "[data-testid*='job'] a, [data-testid*='aviso'] a",
+                    "[data-testid*='job'] a",
+                    "[data-testid*='aviso'] a",
                     "article a[href]",
                     "li a[href*='empleo']",
                 ]:
                     links_avisos = driver.find_elements(By.CSS_SELECTOR, fallback)
                     if links_avisos:
+                        print(f"[SCRAPER {fuente} p{pagina}] fallback '{fallback}' → {len(links_avisos)}", flush=True)
                         break
 
             # Último recurso: cualquier <a> cuya URL contenga el patrón de aviso
@@ -164,10 +183,13 @@ def _scrapear_navent(
                     if "/empleos/ver/" in (l.get_attribute("href") or "")
                     or "/empleo/" in (l.get_attribute("href") or "")
                 ]
+                # Log todos los hrefs para diagnóstico
+                hrefs = [l.get_attribute("href") for l in todos_links[:20]]
+                print(f"[SCRAPER {fuente} p{pagina}] primeros hrefs: {hrefs}", flush=True)
 
             if not links_avisos:
                 if progress_callback:
-                    progress_callback(None, f"[{fuente} p{pagina}] Sin resultados — {titulo_pagina or url}")
+                    progress_callback(None, f"[{fuente} p{pagina}] Sin avisos. Ver logs de Render para diagnóstico.")
                 break  # Sin más páginas
 
             vistos: set = set()
