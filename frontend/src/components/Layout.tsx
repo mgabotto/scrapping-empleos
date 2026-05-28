@@ -49,8 +49,8 @@ export default function Layout() {
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-white/10">
-          <p className="text-xs text-purple-300">💼 Argentina · LinkedIn · Indeed</p>
-          <p className="text-xs text-purple-300">🌐 Bumeran · ZonaJobs</p>
+          <p className="text-xs text-purple-300">💼 LinkedIn · Indeed (Argentina)</p>
+          <p className="text-xs text-purple-300">🌐 Computrabajo Argentina</p>
         </div>
       </aside>
 

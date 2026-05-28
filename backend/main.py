@@ -47,12 +47,12 @@ SCRAPERS = {
     },
     "argentina": {
         "id": "argentina",
-        "nombre": "ZonaJobs & Bumeran",
-        "descripcion": "Scraper Selenium para ZonaJobs y Bumeran (Argentina)",
+        "nombre": "Computrabajo Argentina",
+        "descripcion": "Scraper para Computrabajo.com.ar — rápido, sin necesidad de Chrome",
         "default_config": {
             "terminos": ["PR", "Marketing", "Comunicación Institucional", "Comunicación Externa"],
             "paginas_por_busqueda": 3,
-            "obtener_descripcion": True,
+            "obtener_descripcion": False,
         },
     },
 }

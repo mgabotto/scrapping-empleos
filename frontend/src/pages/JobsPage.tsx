@@ -14,6 +14,7 @@ import type { Job, JobStats } from "../types";
 const SOURCE_COLORS: Record<string, string> = {
   linkedin: "bg-blue-100 text-blue-700",
   indeed: "bg-purple-100 text-purple-700",
+  computrabajo: "bg-orange-100 text-orange-700",
   bumeran: "bg-orange-100 text-orange-700",
   zonajobs: "bg-teal-100 text-teal-700",
 };
