@@ -10,7 +10,6 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
 
 DEFAULT_CONFIG = {
     "terminos": ["PR", "Marketing", "Comunicación Institucional", "Comunicación Externa"],
@@ -84,10 +83,14 @@ def _iniciar_driver():
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
     )
-    # En Linux (Docker/Render) apuntar al Chrome del sistema
     if sys.platform != "win32":
-        opts.binary_location = "/usr/bin/google-chrome"
-    service = Service(ChromeDriverManager().install())
+        # Linux/Docker: usar Chromium del sistema (siempre version-matched con chromium-driver)
+        opts.binary_location = "/usr/bin/chromium"
+        service = Service("/usr/bin/chromedriver")
+    else:
+        # Windows local: descargar ChromeDriver automáticamente
+        from webdriver_manager.chrome import ChromeDriverManager
+        service = Service(ChromeDriverManager().install())
     return webdriver.Chrome(service=service, options=opts)
 
 
